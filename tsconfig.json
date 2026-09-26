@@ -3,5 +3,9 @@
 	"references": [
 		{ "path": "./tsconfig.app.json" },
 		{ "path": "./tsconfig.node.json" }
-	]
+	],
+	// shadcn reads aliases from this root file only; it doesn't follow `references`.
+	"compilerOptions": {
+		"paths": { "@/*": ["./src/*"] }
+	}
 }

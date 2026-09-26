@@ -1,9 +1,9 @@
-import { useState } from "react";
-
 function App() {
-	const [_count, _setCount] = useState(0);
-
-	return <section>Yo, world!</section>;
+	return (
+		<div className="flex h-dvh flex-col gap-3 bg-background p-3 text-foreground">
+			Yo, world!
+		</div>
+	);
 }
 
 export default App;
