@@ -13,7 +13,7 @@ export function createHyperLiquidFeed({
 	wsUrl,
 	infoUrl,
 }: Endpoints): MarketFeed {
-	const lastStatus: Status | null = null;
+	let lastStatus: Status | null = null;
 	const marketListeners = new Map<string, Set<MessageListener>>();
 	const statusListeners = new Set<(message: Status) => void>();
 	const connection = createWsConnection(wsUrl, {
@@ -24,6 +24,7 @@ export function createHyperLiquidFeed({
 				marketListeners.get(key)?.forEach((listener) => listener(message));
 		},
 		onStatus(status) {
+			lastStatus = status;
 			statusListeners.forEach((listener) => listener(status));
 		},
 	});

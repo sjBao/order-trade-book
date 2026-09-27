@@ -73,6 +73,7 @@ export function createSession(feed: MarketFeed, interval: Interval): Session {
 		unsubscribeMarket = null;
 		bookStore.reset();
 		tradesStore.reset();
+		latestCandleStore.reset();
 		candleHistoryStore.reset();
 	}
 

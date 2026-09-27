@@ -48,7 +48,7 @@ export function CandleChart() {
 			const candles = snapshot?.status === "loaded" ? snapshot.candles : [];
 			series.setData(candles.map(toBar));
 			lastTime = candles.at(-1)?.time ?? 0;
-			// drawLatest(); // the live bar may be newer than the history's last bar
+			drawLatest();
 		};
 
 		drawHistory();
