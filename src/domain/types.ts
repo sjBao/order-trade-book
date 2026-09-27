@@ -24,6 +24,15 @@ export type Trade = {
 	time: number; // ms
 };
 
+export type Candle = {
+	time: number; // bucket start, in SECONDS (what the chart expects)
+	open: number;
+	high: number;
+	low: number;
+	close: number;
+	volume: number;
+};
+
 // offline: the browser reports no network, so we wait for it instead of retrying
 export type Status =
 	| "connecting"

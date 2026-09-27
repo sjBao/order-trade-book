@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import { cn } from "@/lib/utils";
+import { CandleChart } from "./CandleChart";
 import { OrderBook } from "./OrderBook";
 import { TradesTape } from "./TradesTape";
 
@@ -69,9 +70,7 @@ export function AppLayout() {
 				{wide ? (
 					<>
 						<div className="grid min-h-0 grid-cols-1 grid-rows-1">
-							<div className="border border-white border-solid">
-								Candle Chart
-							</div>
+							<CandleChart />
 						</div>
 						<div className="flex min-h-0 flex-col gap-2">
 							{tabList}
@@ -88,9 +87,7 @@ export function AppLayout() {
 							forceMount
 							className="grid min-h-0 grid-cols-1 grid-rows-1 data-[state=inactive]:hidden"
 						>
-							<div className="border border-white border-solid">
-								Candle Chart
-							</div>
+							<CandleChart />
 						</TabsContent>
 						{panels}
 					</>

@@ -1,5 +1,5 @@
-import type { Book, Level, Trade } from "@/domain/types";
-import type { WsBook, WsLevel, WsTrade } from "./wire";
+import type { Book, Candle, Level, Trade } from "@/domain/types";
+import type { WsBook, WsCandle, WsLevel, WsTrade } from "./wire";
 
 export function parseBook(book: WsBook): Book {
 	const [bids, asks] = book.levels;
@@ -30,5 +30,16 @@ export function parseTrade(trade: WsTrade): Trade {
 		pxText: trade.px,
 		sz: Number(trade.sz),
 		time: trade.time,
+	};
+}
+
+export function parseCandle(candle: WsCandle): Candle {
+	return {
+		time: candle.t / 1000,
+		open: Number(candle.o),
+		high: Number(candle.h),
+		low: Number(candle.l),
+		close: Number(candle.c),
+		volume: Number(candle.v),
 	};
 }

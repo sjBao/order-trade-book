@@ -1,11 +1,14 @@
 // The composition root: the only module that knows both Hyperliquid and the stores.
 
-import { DEFAULT_MARKET } from "@/domain/market";
-import { TESTNET_WS } from "@/hyperliquid/wire";
+import { CHART_INTERVAL, DEFAULT_MARKET } from "@/domain/market";
+import { TESTNET_INFO, TESTNET_WS } from "@/hyperliquid/wire";
 import { createSession } from "@/stores/createSession";
 import { createHyperLiquidFeed } from "./hyperliquid/feed";
 
-export const session = createSession(createHyperLiquidFeed(TESTNET_WS));
+export const session = createSession(
+	createHyperLiquidFeed({ wsUrl: TESTNET_WS, infoUrl: TESTNET_INFO }),
+	CHART_INTERVAL,
+);
 
 session.selectMarket(DEFAULT_MARKET);
 

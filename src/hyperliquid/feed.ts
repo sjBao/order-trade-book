@@ -1,13 +1,18 @@
 import type { MarketFeed } from "@/domain/feed";
 import type { Status } from "@/domain/types";
 import { createWsConnection } from "./connection";
-import { parseBook, parseTrade } from "./parse";
+import { fetchCandleHistorySnapshot } from "./fetchCandleHistorySnapshot";
+import { parseBook, parseCandle, parseTrade } from "./parse";
 import { messageKey, subscriptionKey } from "./subscriptionKey";
 import type { WsDataMessage, WsSubscription } from "./wire";
 
+type Endpoints = { wsUrl: string; infoUrl: string };
 type MessageListener = (message: WsDataMessage) => void;
 
-export function createHyperLiquidFeed(wsUrl: string): MarketFeed {
+export function createHyperLiquidFeed({
+	wsUrl,
+	infoUrl,
+}: Endpoints): MarketFeed {
 	const lastStatus: Status | null = null;
 	const marketListeners = new Map<string, Set<MessageListener>>();
 	const statusListeners = new Set<(message: Status) => void>();
@@ -56,6 +61,16 @@ export function createHyperLiquidFeed(wsUrl: string): MarketFeed {
 				if (message.channel === "trades")
 					listener(message.data.map(parseTrade));
 			});
+		},
+
+		async fetchCandles(coin, interval, signal) {
+			const candles = await fetchCandleHistorySnapshot(
+				infoUrl,
+				coin,
+				interval,
+				signal,
+			);
+			return candles.map(parseCandle);
 		},
 
 		onStatus(listener) {
