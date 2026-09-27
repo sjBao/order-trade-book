@@ -126,13 +126,37 @@ flowchart LR
 | Biome | Lint + format + imports in one tool |
 
 ## Tested by hand
-- Turn wifi off, turn wifi back on
-- turn wifi off, switch markets, turn wifi back on
 
+| Test | Result |
+|---|---|
+| Wi-Fi off, then on | Reconnects |
+| Wi-Fi off, switch markets, Wi-Fi on | Reconnects to the selected market only; no messages from the previous one |
+| Rapid market switching | Old channels unsubscribed; only the selected market's data shows |
+| Wi-Fi off for over 35 s, then on | Reconnects to the selected market |
+
+Turning Wi-Fi off fires the browser's `offline` event, so these cover the offline path. The
+heartbeat path (a socket that goes silent while the browser still reports online, detected
+after 25–35 s) isn't covered by them.
 
 ## AI usage
-- component scaffolding: building UI elements
-- unit tests
+
+- **AI as reviewer:** reviewing this repo against the brief, it found three bugs:
+  - the first connection status was lost before anything subscribed
+  - the live candle survived a market switch (I had commented out `drawLatest()` rather
+    than find the cause)
+  - `domain/` imported a type from the Hyperliquid adapter
+
+  AI wrote the fixes.
+- **AI-written, checked by me:**
+  - setup fixes: the shadcn `@` alias, removing Vite's template CSS, switching Base UI to Radix
+  - the unit tests, from properties I chose. Each was checked by breaking the code it covers;
+    one could never fail and was rewritten.
+  - the first draft of this README
+- **Decisions, with AI as a sounding board:**
+  - no React Compiler: book rows re-render because their data changes, so there's nothing to skip
+  - no shadcn Card: styling only, and too roomy for a dense trading screen
+  - Radix over Base UI: my reference used Radix, so components port without translating
+  - Biome over oxlint + Prettier: one tool for linting and formatting
 
 ## Known limitations
 
