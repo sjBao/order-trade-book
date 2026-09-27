@@ -1,5 +1,12 @@
-import type { Interval } from "@/hyperliquid/wire";
-import type { Book, Candle, Coin, Status, Trade, Unsubscribe } from "./types";
+import type {
+	Book,
+	Candle,
+	Coin,
+	Interval,
+	Status,
+	Trade,
+	Unsubscribe,
+} from "./types";
 
 export interface MarketFeed {
 	onStatus(fn: (status: Status) => void): () => void;

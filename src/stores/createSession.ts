@@ -1,6 +1,5 @@
 import type { MarketFeed } from "@/domain/feed";
-import type { Coin, Status, Unsubscribe } from "@/domain/types";
-import type { Interval } from "@/hyperliquid/wire";
+import type { Coin, Interval, Status, Unsubscribe } from "@/domain/types";
 import { bookStore } from "./book";
 import { candleHistoryStore } from "./candleHistoryStore";
 import { latestCandleStore } from "./latestCandleStore";

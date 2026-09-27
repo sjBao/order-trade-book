@@ -1,5 +1,6 @@
-import type { Coin } from "@/domain/types";
-import { INTERVAL_MS, type Interval, type WsCandle } from "./wire";
+import { INTERVAL_MS } from "@/domain/market";
+import type { Coin, Interval } from "@/domain/types";
+import type { WsCandle } from "./wire";
 
 // Hard coded for now
 const HISTORY_BARS = 300;

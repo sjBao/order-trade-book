@@ -1,5 +1,7 @@
 export type Coin = string; // "BTC", "ETH", or a HIP-3 market like "xyz:NVDA"
 
+export type Interval = "1m" | "5m" | "15m" | "1h" | "4h" | "1d";
+
 export type Level = {
 	px: number;
 	pxText: string; // price exactly as the exchange sent it: display this, do maths on px

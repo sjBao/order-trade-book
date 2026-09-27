@@ -1,5 +1,4 @@
-import type { Interval } from "@/hyperliquid/wire";
-import type { Coin } from "./types";
+import type { Coin, Interval } from "./types";
 
 type MarketMeta = {
 	szDecimals: number; // size precision, from Hyperliquid's `meta` endpoint
@@ -18,3 +17,12 @@ export const MARKET_META: Record<Coin, MarketMeta> = {
 export const MARKETS: Coin[] = Object.keys(MARKET_META);
 export const DEFAULT_MARKET: Coin = MARKETS[0];
 export const CHART_INTERVAL: Interval = "1m";
+
+export const INTERVAL_MS: Record<Interval, number> = {
+	"1m": 60_000,
+	"5m": 5 * 60_000,
+	"15m": 15 * 60_000,
+	"1h": 60 * 60_000,
+	"4h": 4 * 60 * 60_000,
+	"1d": 24 * 60 * 60_000,
+};
