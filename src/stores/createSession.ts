@@ -1,11 +1,9 @@
 import type { MarketFeed } from "@/domain/feed";
-import { DEFAULT_MARKET } from "@/domain/market";
 import type { Coin, Unsubscribe } from "@/domain/types";
-import { createHyperLiquidFeed } from "@/hyperliquid/feed";
-import { TESTNET_WS } from "@/hyperliquid/wire";
 import { bookStore } from "./book";
 import { selectedCoinStore } from "./selectedCoinStore";
 import { statusStore } from "./status";
+import { mergeTrades, tradesStore } from "./trades";
 
 export type Session = {
 	selectMarket(coin: Coin): void;
@@ -26,13 +24,28 @@ export function createSession(feed: MarketFeed): Session {
 		unsubscribeMarket?.();
 		unsubscribeMarket = null;
 		bookStore.reset();
+		tradesStore.reset();
+	}
+
+	function subscribeMarket(market: Coin): Unsubscribe {
+		const unsubs = [
+			feed.onBook(market, (book) => bookStore.set(book)),
+			feed.onTrade(market, (newTrades) =>
+				tradesStore.update((currentTrades) =>
+					mergeTrades(currentTrades, newTrades),
+				),
+			),
+		];
+
+		return () => unsubs.forEach((unsub) => unsub());
 	}
 
 	return {
-		selectMarket(coin) {
+		selectMarket(next) {
 			teardownMarket();
-			selectedCoinStore.set(coin);
-			unsubscribeMarket = feed.onBook(coin, (book) => bookStore.set(book));
+			selectedCoinStore.set(next);
+
+			unsubscribeMarket = subscribeMarket(next);
 		},
 
 		close() {
@@ -41,8 +54,3 @@ export function createSession(feed: MarketFeed): Session {
 		},
 	};
 }
-
-// session.ts: the composition root, unchanged in shape
-export const session = createSession(createHyperLiquidFeed(TESTNET_WS));
-session.selectMarket(DEFAULT_MARKET);
-import.meta.hot?.dispose(() => session.close());

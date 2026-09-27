@@ -14,6 +14,16 @@ export type Book = {
 	asks: Level[]; // best (lowest) first
 };
 
+export type Trade = {
+	id: number;
+	coin: Coin;
+	side: "buy" | "sell"; // the aggressor (taker) side
+	px: number;
+	pxText: string;
+	sz: number;
+	time: number; // ms
+};
+
 // offline: the browser reports no network, so we wait for it instead of retrying
 export type Status =
 	| "connecting"

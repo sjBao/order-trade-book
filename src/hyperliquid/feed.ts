@@ -1,8 +1,9 @@
 import type { MarketFeed } from "@/domain/feed";
-import type { Book, Level, Status } from "@/domain/types";
+import type { Status } from "@/domain/types";
 import { createWsConnection } from "./connection";
+import { parseBook, parseTrade } from "./parse";
 import { messageKey, subscriptionKey } from "./subscriptionKey";
-import type { WsBook, WsDataMessage, WsLevel, WsSubscription } from "./wire";
+import type { WsDataMessage, WsSubscription } from "./wire";
 
 type MessageListener = (message: WsDataMessage) => void;
 
@@ -50,6 +51,13 @@ export function createHyperLiquidFeed(wsUrl: string): MarketFeed {
 			});
 		},
 
+		onTrade(coin, listener) {
+			return listenToMarket({ type: "trades", coin }, (message) => {
+				if (message.channel === "trades")
+					listener(message.data.map(parseTrade));
+			});
+		},
+
 		onStatus(listener) {
 			statusListeners.add(listener);
 			if (lastStatus) listener(lastStatus);
@@ -60,24 +68,4 @@ export function createHyperLiquidFeed(wsUrl: string): MarketFeed {
 
 		close: () => connection.close(),
 	};
-}
-
-export function parseBook(book: WsBook): Book {
-	const [bids, asks] = book.levels;
-	return {
-		coin: book.coin,
-		time: book.time,
-		bids: parseLevels(bids),
-		asks: parseLevels(asks),
-	};
-}
-
-/** Levels arrive best first, so a running sum gives each level's cumulative depth. */
-function parseLevels(levels: WsLevel[]): Level[] {
-	let total = 0;
-	return levels.map(({ px, sz }) => {
-		const size = Number(sz);
-		total += size;
-		return { px: Number(px), pxText: px, sz: size, total };
-	});
 }

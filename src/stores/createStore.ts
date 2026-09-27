@@ -4,6 +4,7 @@ export type Store<T> = {
 	getSnapshot(): T | null;
 	reset(): void;
 	set(value: T): void;
+	update(fn: (latest: T | null) => T): void;
 	subscribe(listener: () => void): () => void;
 };
 export function createStore<T>(): Store<T> {
@@ -44,6 +45,11 @@ export function createStore<T>(): Store<T> {
 
 		set(value: T) {
 			latest = value;
+			schedulePublish();
+		},
+
+		update(fn) {
+			latest = fn(latest);
 			schedulePublish();
 		},
 
