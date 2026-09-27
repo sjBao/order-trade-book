@@ -1,4 +1,5 @@
 import type { Status } from "@/domain/types";
+import { subscriptionKey } from "./subscriptionKey";
 import type { WsDataMessage, WsMessage, WsSubscription } from "./wire";
 
 export type Connection = {
@@ -134,13 +135,14 @@ export function createWsConnection(
 
 	return {
 		subscribe(subscription) {
-			console.log(" ***** subscribing", { subscription });
-			active.set(JSON.stringify(subscription), subscription);
+			const key = subscriptionKey(subscription);
+			active.set(key, subscription);
 			send({ method: "subscribe", subscription });
 		},
 
 		unsubscribe(subscription) {
-			active.delete(JSON.stringify(subscription));
+			const key = subscriptionKey(subscription);
+			active.delete(key);
 			send({ method: "unsubscribe", subscription });
 		},
 

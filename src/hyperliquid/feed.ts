@@ -1,6 +1,7 @@
 import type { MarketFeed } from "@/domain/feed";
 import type { Book, Level, Status } from "@/domain/types";
 import { createWsConnection } from "./connection";
+import { messageKey, subscriptionKey } from "./subscriptionKey";
 import type { WsBook, WsDataMessage, WsLevel, WsSubscription } from "./wire";
 
 type MessageListener = (message: WsDataMessage) => void;
@@ -11,10 +12,7 @@ export function createHyperLiquidFeed(wsUrl: string): MarketFeed {
 	const statusListeners = new Set<(message: Status) => void>();
 	const connection = createWsConnection(wsUrl, {
 		onMessage(message) {
-			const key = JSON.stringify({
-				type: message.channel,
-				coin: message.data.coin,
-			});
+			const key = messageKey(message);
 
 			marketListeners.get(key).forEach((listener) => listener(message));
 		},
@@ -27,7 +25,7 @@ export function createHyperLiquidFeed(wsUrl: string): MarketFeed {
 		subscription: WsSubscription,
 		listener: MessageListener,
 	) {
-		const key = JSON.stringify(subscription);
+		const key = subscriptionKey(subscription);
 		const keyListeners = marketListeners.get(key) ?? new Set<MessageListener>();
 
 		if (keyListeners.size === 0) {
