@@ -1,5 +1,11 @@
 import type { Status } from "@/domain/types";
-import type { WsDataMessage, WsMessage } from "./wire";
+import type { WsDataMessage, WsMessage, WsSubscription } from "./wire";
+
+export type Connection = {
+	subscribe(subscription: WsSubscription): void;
+	unsubscribe(subscription: WsSubscription): void;
+	close(): void;
+};
 
 export type ConnectionHandlers = {
 	onMessage(message: WsDataMessage): void;
@@ -14,10 +20,12 @@ const BACKOFF_MAX_MS = 30_000;
 export function createWsConnection(
 	url: string,
 	{ onMessage, onStatus }: ConnectionHandlers,
-) {
+): Connection {
+	const active = new Map<string, WsSubscription>();
 	let socket: WebSocket | null = null;
 	let attempts = 0,
 		lastMessageAt = 0;
+	let closed = false;
 	let heartbeat: ReturnType<typeof setInterval> | undefined,
 		retryTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -27,33 +35,14 @@ export function createWsConnection(
 	}
 
 	function connect() {
+		if (closed) return;
 		if (!navigator.onLine) return onStatus("offline");
 
 		onStatus(attempts === 0 ? "connecting" : "reconnecting");
 		socket = new WebSocket(url);
 		socket.onopen = handleOpen;
+		socket.onmessage = handleMessage;
 		socket.onclose = handleClose;
-
-		socket.onmessage = (event) => {
-			let message: WsMessage;
-			try {
-				message = JSON.parse(event.data);
-			} catch {
-				console.warn("Hyperliquid: unparseable frame", event.data);
-				return;
-			}
-
-			switch (message.channel) {
-				case "pong":
-				case "subscriptionResponse":
-					return;
-				case "error":
-					return;
-
-				default:
-					onMessage(message);
-			}
-		};
 	}
 
 	function handleOpen() {
@@ -61,6 +50,35 @@ export function createWsConnection(
 		lastMessageAt = Date.now();
 		onStatus("open");
 		heartbeat = setInterval(checkHeartbeat, PING_INTERVAL_MS);
+	}
+
+	function handleMessage(event) {
+		lastMessageAt = Date.now();
+
+		let message: WsMessage;
+		try {
+			message = JSON.parse(event.data);
+		} catch {
+			console.warn("Hyperliquid: unparseable frame", event.data);
+			return;
+		}
+
+		switch (message.channel) {
+			case "pong":
+			case "subscriptionResponse":
+				return;
+			case "error":
+				console.error("Hyperliquid:", message.data);
+				return;
+			default:
+				onMessage(message);
+		}
+	}
+
+	function handleClose() {
+		clearInterval(heartbeat);
+		socket = null;
+		scheduleReconnect();
 	}
 
 	function checkHeartbeat() {
@@ -107,13 +125,27 @@ export function createWsConnection(
 		);
 	}
 
-	function handleClose() {
-		clearInterval(heartbeat);
-		socket = null;
-		scheduleReconnect();
-	}
-
 	window.addEventListener("offline", handleOffline);
 	window.addEventListener("online", handleOnline);
 	connect();
+
+	return {
+		subscribe(subscription) {
+			active.set(JSON.stringify(subscription), subscription);
+			send({ method: "subscribe", subscription });
+		},
+
+		unsubscribe(subscription) {
+			active.delete(JSON.stringify(subscription));
+			send({ method: "unsubscribe", subscription });
+		},
+
+		close() {
+			closed = true;
+			window.removeEventListener("offline", handleOffline);
+			window.removeEventListener("online", handleOnline);
+			dropSocket();
+			onStatus("closed");
+		},
+	};
 }

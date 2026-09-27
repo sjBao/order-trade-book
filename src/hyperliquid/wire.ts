@@ -34,6 +34,11 @@ export type WsCandle = {
 	n: number;
 };
 
+export type WsSubscription =
+	| { type: "l2Book"; coin: string }
+	| { type: "trades"; coin: string }
+	| { type: "candle"; coin: string; interval: Interval };
+
 export type WsDataMessage =
 	| { channel: "l2Book"; data: WsBook }
 	| { channel: "trades"; data: WsTrade[] }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import { cn } from "@/lib/utils";
+import { OrderBook } from "./OrderBook";
 
 const WIDE = "(min-width: 1000px)";
 
@@ -36,7 +37,7 @@ export function AppLayout() {
 	const panels = (
 		<>
 			<TabsContent value="book" className={cn(wide && "min-h-0")}>
-				<div className="border border-white border-solid">Orderbook</div>
+				<OrderBook />
 			</TabsContent>
 			<TabsContent value="trades" className={cn(wide && "min-h-0")}>
 				<div className="border border-white border-solid">Trades Tape</div>

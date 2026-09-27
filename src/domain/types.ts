@@ -1,3 +1,19 @@
+export type Coin = string; // "BTC", "ETH", or a HIP-3 market like "xyz:NVDA"
+
+export type Level = {
+	px: number;
+	pxText: string; // price exactly as the exchange sent it: display this, do maths on px
+	sz: number;
+	total: number; // cumulative size from the best price outward
+};
+
+export type Book = {
+	coin: Coin;
+	time: number; // ms
+	bids: Level[]; // best (highest) first
+	asks: Level[]; // best (lowest) first
+};
+
 // offline: the browser reports no network, so we wait for it instead of retrying
 export type Status =
 	| "connecting"
@@ -5,3 +21,5 @@ export type Status =
 	| "reconnecting"
 	| "offline"
 	| "closed";
+
+export type Unsubscribe = () => void;
