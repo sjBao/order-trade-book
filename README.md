@@ -55,8 +55,10 @@ New venue = new adapter; `stores/` and `components/` unchanged.
 stateDiagram-v2
   [*] --> Connecting
   Connecting --> Live: open → replay all wanted subs
+  Connecting --> Reconnecting: closed before open
   Live --> Reconnecting: close, or 25s silence
-  Reconnecting --> Connecting: backoff 1s→30s, ±50% jitter
+  Reconnecting --> Live: open → replay all wanted subs
+  Reconnecting --> Reconnecting: failed attempt, backoff 1s→30s ±50% jitter
   Connecting --> Offline: navigator.onLine false
   Live --> Offline: window offline
   Reconnecting --> Offline: window offline
@@ -94,7 +96,7 @@ flowchart LR
   M[WS messages] -->|every msg| L[store.latest]
   L -->|rAF, ≤1/frame| SN[store.snapshot]
   SN --> R[React render]
-  M -.->|live tick| CH[chart series.update<br/>bypasses React]
+  SN -.->|latest candle| CH[chart series.update<br/>bypasses React]
 ```
 
 - Burst → one render; background tab → none (rAF paused)
@@ -119,15 +121,18 @@ flowchart LR
 |---|---|
 | React 19 + TS + Vite | Preferred stack; fast dev, static build |
 | No state lib | Frame batching is ~60 lines on `useSyncExternalStore` |
-| Tailwind v4 + shadcn/ui (Radix) | Accessible Tabs / ToggleGroup / ScrollArea as owned source; only 4 installed |
+| Tailwind v4 + shadcn/ui (Radix) | Accessible Tabs / ToggleGroup / ScrollArea as owned source; only what's used (4 components + Toggle, a dependency) |
 | lightweight-charts | Canvas financial chart, incremental `update()`, small |
 | Biome | Lint + format + imports in one tool |
 
 ## Tested by hand
+- Turn wifi off, turn wifi back on
+- turn wifi off, switch markets, turn wifi back on
+
 
 ## AI usage
-
-Research · component scaffolding · code review
+- component scaffolding: building UI elements
+- unit tests
 
 ## Known limitations
 
@@ -143,4 +148,4 @@ Research · component scaffolding · code review
 - [ ] Flash rows on change
 - [ ] "Syncing" state between open and first message
 - [ ] Cross-tab shared socket (SharedWorker)
-- [ ] Unit tests (stores, trade merge, market switch) with fake `MarketFeed`
+- [ ] Connection tests with a fake WebSocket (reconnect, heartbeat, subscription replay)
