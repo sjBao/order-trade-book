@@ -1,3 +1,4 @@
+import type { Interval } from "@/hyperliquid/wire";
 import type { Coin } from "./types";
 
 type MarketMeta = {
@@ -13,3 +14,7 @@ export const MARKET_META: Record<Coin, MarketMeta> = {
 	// so it doubles as the live case for the order book's empty-side handling.
 	"xyz:NVDA": { szDecimals: 3 },
 };
+
+export const MARKETS: Coin[] = Object.keys(MARKET_META);
+export const DEFAULT_MARKET: Coin = MARKETS[0];
+export const CHART_INTERVAL: Interval = "1m";

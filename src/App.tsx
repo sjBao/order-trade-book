@@ -1,5 +1,6 @@
 import { AppLayout } from "./components/AppLayout";
 import { ConnectionBadge } from "./components/ConnectionBadge";
+import { MarketSelector } from "./components/MarketSelector";
 
 function App() {
 	return (
@@ -7,9 +8,7 @@ function App() {
 			<header className="flex flex-wrap items-center justify-between gap-3">
 				<div className="flex items-center gap-3">
 					<h1 className="text-sm font-semibold">Primex trade book</h1>
-					<div className="border border-white border-solid">
-						Market selector
-					</div>
+					<MarketSelector />
 				</div>
 				<ConnectionBadge />
 			</header>

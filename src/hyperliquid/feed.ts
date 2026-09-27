@@ -57,6 +57,8 @@ export function createHyperLiquidFeed(wsUrl: string): MarketFeed {
 				statusListeners.delete(listener);
 			};
 		},
+
+		close: () => connection.close(),
 	};
 }
 
