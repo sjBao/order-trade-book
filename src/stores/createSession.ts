@@ -3,6 +3,7 @@ import type { Coin, Status, Unsubscribe } from "@/domain/types";
 import type { Interval } from "@/hyperliquid/wire";
 import { bookStore } from "./book";
 import { candleHistoryStore } from "./candleHistoryStore";
+import { latestCandleStore } from "./latestCandleStore";
 import { selectedCoinStore } from "./selectedCoinStore";
 import { statusStore } from "./status";
 import { mergeTrades, tradesStore } from "./trades";
@@ -38,6 +39,9 @@ export function createSession(feed: MarketFeed, interval: Interval): Session {
 				tradesStore.update((currentTrades) =>
 					mergeTrades(currentTrades, newTrades),
 				),
+			),
+			feed.onCandle(market, interval, (candle) =>
+				latestCandleStore.set(candle),
 			),
 		];
 

@@ -10,7 +10,7 @@ import {
 	candleHistoryStore,
 	useCandleHistory,
 } from "@/stores/candleHistoryStore";
-// import { latestCandleStore } from "@/stores/latestCandleStore";
+import { latestCandleStore } from "@/stores/latestCandleStore";
 import { Panel } from "../Panel";
 import { chartOptions, seriesOptions } from "./theme";
 
@@ -33,28 +33,28 @@ export function CandleChart() {
 			autoSize: true,
 		});
 		const series = chart.addSeries(CandlestickSeries, seriesOptions());
-		let _lastTime = 0;
+		let lastTime = 0;
 
-		// const drawLatest = () => {
-		// 	const candle = latestCandleStore.getSnapshot();
-		// 	// update() throws on a bar older than the last one drawn.
-		// 	if (!candle || candle.time < lastTime) return;
-		// 	series.update(toBar(candle));
-		// 	lastTime = candle.time;
-		// };
+		const drawLatest = () => {
+			const candle = latestCandleStore.getSnapshot();
+			// update() throws on a bar older than the last one drawn.
+			if (!candle || candle.time < lastTime) return;
+			series.update(toBar(candle));
+			lastTime = candle.time;
+		};
 
 		const drawHistory = () => {
 			const snapshot = candleHistoryStore.getSnapshot();
 			const candles = snapshot?.status === "loaded" ? snapshot.candles : [];
 			series.setData(candles.map(toBar));
-			_lastTime = candles.at(-1)?.time ?? 0;
+			lastTime = candles.at(-1)?.time ?? 0;
 			// drawLatest(); // the live bar may be newer than the history's last bar
 		};
 
 		drawHistory();
 		const unsubscribes = [
 			candleHistoryStore.subscribe(drawHistory),
-			// latestCandleStore.subscribe(drawLatest),
+			latestCandleStore.subscribe(drawLatest),
 		];
 
 		return () => {

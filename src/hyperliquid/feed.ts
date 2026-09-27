@@ -63,6 +63,12 @@ export function createHyperLiquidFeed({
 			});
 		},
 
+		onCandle(coin, interval, listener) {
+			return listenToMarket({ type: "candle", coin, interval }, (message) => {
+				if (message.channel === "candle") listener(parseCandle(message.data));
+			});
+		},
+
 		async fetchCandles(coin, interval, signal) {
 			const candles = await fetchCandleHistorySnapshot(
 				infoUrl,
