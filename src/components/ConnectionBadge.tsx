@@ -4,6 +4,7 @@ import type { Status } from "@/domain/types";
 import { createHyperLiquidFeed } from "@/hyperliquid/feed";
 import { TESTNET_WS } from "@/hyperliquid/wire";
 import { cn } from "@/lib/utils";
+import { bookStore } from "@/stores/book";
 import { statusStore, useConnectionStatus } from "@/stores/status";
 
 // Record<Status, …>: adding a status to the type is a compile error here until it has a label.
@@ -29,7 +30,9 @@ const DOT: Record<Status, string> = {
 	closed: "bg-ask",
 };
 
-createHyperLiquidFeed(TESTNET_WS).onStatus((status) => statusStore.set(status));
+const feed = createHyperLiquidFeed(TESTNET_WS);
+feed.onStatus((status) => statusStore.set(status));
+feed.onBook("BTC", (book) => bookStore.set(book));
 
 export function ConnectionBadge() {
 	// null only until the first animation frame; the socket starts connecting on load.

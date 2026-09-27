@@ -30,8 +30,9 @@ export function createWsConnection(
 		retryTimer: ReturnType<typeof setTimeout> | undefined;
 
 	function send(message: object) {
-		if (socket?.readyState === WebSocket.OPEN)
+		if (socket?.readyState === WebSocket.OPEN) {
 			socket?.send(JSON.stringify(message));
+		}
 	}
 
 	function connect() {
@@ -48,8 +49,10 @@ export function createWsConnection(
 	function handleOpen() {
 		attempts = 0;
 		lastMessageAt = Date.now();
-		onStatus("open");
+		for (const subscription of active.values())
+			send({ method: "subscribe", subscription });
 		heartbeat = setInterval(checkHeartbeat, PING_INTERVAL_MS);
+		onStatus("open");
 	}
 
 	function handleMessage(event) {
@@ -131,6 +134,7 @@ export function createWsConnection(
 
 	return {
 		subscribe(subscription) {
+			console.log(" ***** subscribing", { subscription });
 			active.set(JSON.stringify(subscription), subscription);
 			send({ method: "subscribe", subscription });
 		},
