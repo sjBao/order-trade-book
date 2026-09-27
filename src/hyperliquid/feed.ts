@@ -20,7 +20,8 @@ export function createHyperLiquidFeed({
 		onMessage(message) {
 			const key = messageKey(message);
 
-			marketListeners.get(key).forEach((listener) => listener(message));
+			if (key)
+				marketListeners.get(key)?.forEach((listener) => listener(message));
 		},
 		onStatus(status) {
 			statusListeners.forEach((listener) => listener(status));
@@ -32,10 +33,11 @@ export function createHyperLiquidFeed({
 		listener: MessageListener,
 	) {
 		const key = subscriptionKey(subscription);
-		const keyListeners = marketListeners.get(key) ?? new Set<MessageListener>();
+		const keyListeners =
+			marketListeners?.get(key) ?? new Set<MessageListener>();
 
 		if (keyListeners.size === 0) {
-			marketListeners.set(key, keyListeners);
+			marketListeners?.set(key, keyListeners);
 			connection.subscribe(subscription);
 		}
 		keyListeners.add(listener);
@@ -44,7 +46,7 @@ export function createHyperLiquidFeed({
 			keyListeners.delete(listener);
 			if (keyListeners.size > 0) return;
 			// no component is listening anymore, unsub from server
-			marketListeners.delete(key);
+			marketListeners?.delete(key);
 			connection.unsubscribe(subscription);
 		};
 	}

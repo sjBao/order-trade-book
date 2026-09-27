@@ -56,7 +56,7 @@ export function createWsConnection(
 		onStatus("open");
 	}
 
-	function handleMessage(event) {
+	function handleMessage(event: MessageEvent<string>) {
 		lastMessageAt = Date.now();
 
 		let message: WsMessage;
