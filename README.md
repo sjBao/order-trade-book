@@ -15,6 +15,7 @@ pnpm install && pnpm dev    # no env vars or API keys; talks to public testnet e
 | `pnpm dev` | dev server, hot reload |
 | `pnpm build` | `tsc -b` + production build |
 | `pnpm check` | Biome lint + format + import sort (with fixes) |
+| `pnpm test` | Vitest unit tests (trades, subscription keys, book view, market switching) |
 
 ## Features
 
