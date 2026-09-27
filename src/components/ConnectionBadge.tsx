@@ -1,8 +1,10 @@
 import type { ComponentProps } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { Status } from "@/domain/types";
+import { createHyperLiquidFeed } from "@/hyperliquid/feed";
+import { TESTNET_WS } from "@/hyperliquid/wire";
 import { cn } from "@/lib/utils";
-import { useConnectionStatus } from "@/stores/status";
+import { statusStore, useConnectionStatus } from "@/stores/status";
 
 // Record<Status, …>: adding a status to the type is a compile error here until it has a label.
 const LABEL: Record<Status, string> = {
@@ -26,6 +28,8 @@ const DOT: Record<Status, string> = {
 	offline: "bg-ask",
 	closed: "bg-ask",
 };
+
+createHyperLiquidFeed(TESTNET_WS).onStatus((status) => statusStore.set(status));
 
 export function ConnectionBadge() {
 	// null only until the first animation frame; the socket starts connecting on load.

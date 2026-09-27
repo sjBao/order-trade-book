@@ -7,14 +7,19 @@ export type ConnectionHandlers = {
 };
 
 const PING_INTERVAL_MS = 10_000;
+const SILENCE_LIMIT_MS = 25_000;
+const BACKOFF_MIN_MS = 1_000;
+const BACKOFF_MAX_MS = 30_000;
 
 export function createWsConnection(
 	url: string,
 	{ onMessage, onStatus }: ConnectionHandlers,
 ) {
 	let socket: WebSocket | null = null;
-	const attempts: number = 0;
-	let _heartbeat: ReturnType<typeof setInterval> | undefined;
+	let attempts = 0,
+		lastMessageAt = 0;
+	let heartbeat: ReturnType<typeof setInterval> | undefined,
+		retryTimer: ReturnType<typeof setTimeout> | undefined;
 
 	function send(message: object) {
 		if (socket?.readyState === WebSocket.OPEN)
@@ -26,14 +31,8 @@ export function createWsConnection(
 
 		onStatus(attempts === 0 ? "connecting" : "reconnecting");
 		socket = new WebSocket(url);
-
-		socket.onopen = () => {
-			_heartbeat = setInterval(() => {
-				send({ channel: "ping" });
-			}, PING_INTERVAL_MS);
-
-			onStatus("open");
-		};
+		socket.onopen = handleOpen;
+		socket.onclose = handleClose;
 
 		socket.onmessage = (event) => {
 			let message: WsMessage;
@@ -57,5 +56,64 @@ export function createWsConnection(
 		};
 	}
 
+	function handleOpen() {
+		attempts = 0;
+		lastMessageAt = Date.now();
+		onStatus("open");
+		heartbeat = setInterval(checkHeartbeat, PING_INTERVAL_MS);
+	}
+
+	function checkHeartbeat() {
+		if (Date.now() - lastMessageAt > SILENCE_LIMIT_MS) {
+			dropSocket();
+			scheduleReconnect();
+			return;
+		}
+		send({ method: "ping" });
+	}
+
+	function dropSocket() {
+		clearInterval(heartbeat);
+		clearTimeout(retryTimer);
+		if (!socket) return;
+		socket.onopen = socket.onmessage = socket.onclose = null;
+		socket.close(1000);
+		socket = null;
+	}
+
+	function handleOffline() {
+		dropSocket();
+		onStatus("offline");
+	}
+
+	function handleOnline() {
+		dropSocket();
+		attempts = 0;
+		connect();
+	}
+
+	function scheduleReconnect() {
+		onStatus("reconnecting");
+		retryTimer = setTimeout(() => {
+			attempts++;
+			connect();
+		}, backoffDelay(attempts));
+	}
+
+	function backoffDelay(attempt: number): number {
+		return (
+			Math.min(BACKOFF_MAX_MS, BACKOFF_MIN_MS * 2 ** attempt) *
+			(0.5 + Math.random())
+		);
+	}
+
+	function handleClose() {
+		clearInterval(heartbeat);
+		socket = null;
+		scheduleReconnect();
+	}
+
+	window.addEventListener("offline", handleOffline);
+	window.addEventListener("online", handleOnline);
 	connect();
 }
